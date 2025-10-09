@@ -1,5 +1,13 @@
-# CsvView Plugin [![Build Status](https://travis-ci.org/friendsofcake/cakephp-csvview.png?branch=master)](https://travis-ci.org/friendsofcake/cakephp-csvview) [![Coverage Status](https://coveralls.io/repos/friendsofcake/cakephp-csvview/badge.png?branch=master)](https://coveralls.io/r/friendsofcake/cakephp-csvview?branch=master) [![Total Downloads](https://poser.pugx.org/friendsofcake/cakephp-csvview/d/total.png)](https://packagist.org/packages/friendsofcake/cakephp-csvview) [![Latest Stable Version](https://poser.pugx.org/friendsofcake/cakephp-csvview/v/stable.png)](https://packagist.org/packages/friendsofcake/cakephp-csvview)
+# CsvView Plugin
 
+[![GitHub License](https://img.shields.io/github/license/pieceofcake2/csv-view?label=License)](LICENSE)
+[![Packagist Version](https://img.shields.io/packagist/v/pieceofcake2/csv-view?label=Packagist)](https://packagist.org/packages/pieceofcake2/csv-view)
+![PHP](https://img.shields.io/packagist/dependency-v/pieceofcake2/csv-view/php?logo=php&logoColor=%23FFFFFF&label=PHP&labelColor=%23777BB4&color=%23FFFFFF)
+![CakePHP](https://img.shields.io/packagist/dependency-v/pieceofcake2/csv-view/pieceofcake2/cakephp?logo=cakephp&logoColor=%23FFFFFF&label=CakePHP&labelColor=%23D33C43&color=%23FFFFFF)
+[![CI](https://img.shields.io/github/actions/workflow/status/pieceofcake2/csv-view/CI.yml?label=CI)](https://github.com/pieceofcake2/csv-view/actions/workflows/CI.yml)
+[![Codecov](https://img.shields.io/codecov/c/gh/pieceofcake2/csv-view?label=Coverage)](https://codecov.io/gh/pieceofcake2/csv-view)
+
+**This is forked for CakePHP2.**
 
 Quickly enable CSV output of your model data.
 
@@ -11,51 +19,22 @@ this with a custom view class, like JsonView or XmlView.
 
 ## Requirements
 
-* CakePHP 2.x (custom view files are only supported in 2.1+)
-* PHP5
-* Patience
+* CakePHP 2.12+
+* PHP8.0+
 
 ## Installation
 
-_[Using [Composer](http://getcomposer.org/)]_
-
-[View on Packagist](https://packagist.org/packages/friendsofcake/cakephp-csvview), and copy
-the JSON snippet for the latest version into your project's `composer.json`. Eg, v. 1.2.0 would look like this:
-
-	{
-		"require": {
-			"friendsofcake/cakephp-csvview": "1.2.0"
-		}
-	}
-
-Because this plugin has the type `cakephp-plugin` set in it's own `composer.json`, composer knows to install it inside your `/Plugins` directory, rather than in the usual vendors file. It is recommended that you add `/Plugins/CsvView` to your .gitignore file. (Why? [read this](http://getcomposer.org/doc/faqs/should-i-commit-the-dependencies-in-my-vendor-directory.md).)
-
-_[Manual]_
-
-* Download this: [http://github.com/friendsofcake/cakephp-csvview/zipball/cake2](http://github.com/friendsofcake/cakephp-csvview/zipball/cake2)
-* Unzip that download.
-* Copy the resulting folder to `app/Plugin`
-* Rename the folder you just copied to `CsvView`
-
-_[GIT Submodule]_
-
-In your app directory type:
-
-	git submodule add -b master git://github.com/friendsofcake/cakephp-csvview.git Plugin/CsvView
-	git submodule init
-	git submodule update
-
-_[GIT Clone]_
-
-In your `Plugin` directory type:
-
-	git clone -b master git://github.com/friendsofcake/cakephp-csvview.git CsvView
+```bash
+composer require pieceofcake2/csv-view
+```
 
 ### Enable plugin
 
 In 2.0 you need to enable the plugin your `app/Config/bootstrap.php` file:
 
-	CakePlugin::load('CsvView');
+```php
+    CakePlugin::load('CsvView');
+```
 
 If you are already using `CakePlugin::loadAll();`, then this is not necessary.
 
@@ -65,15 +44,15 @@ To export a flat array as a CSV, one could write the following code:
 
 ```php
 public function export() {
-	$data = array(
-		array('a', 'b', 'c'),
-		array(1, 2, 3),
-		array('you', 'and', 'me'),
-	);
-	$_serialize = 'data';
+    $data = [
+        ['a', 'b', 'c'],
+        [1, 2, 3],
+        ['you', 'and', 'me'],
+    ];
+    $_serialize = 'data';
 
-	$this->viewClass = 'CsvView.Csv';
-	$this->set(compact('data', '_serialize'));
+    $this->viewClass = 'CsvView.Csv';
+    $this->set(compact('data', '_serialize'));
 }
 ```
 
@@ -83,14 +62,14 @@ It is possible to have multiple variables in the csv output:
 
 ```php
 public function export() {
-	$data = array(array('a', 'b', 'c'));
-	$data_two = array(array(1, 2, 3));
-	$data_three = array(array('you', 'and', 'me'));
+    $data = [['a', 'b', 'c']];
+    $data_two = [[1, 2, 3]];
+    $data_three = [['you', 'and', 'me']];
 
-	$_serialize = array('data', 'data_two', 'data_three');
+    $_serialize = ['data', 'data_two', 'data_three'];
 
-	$this->viewClass = 'CsvView.Csv';
-	$this->set(compact('data', 'data_two', 'data_three', '_serialize'));
+    $this->viewClass = 'CsvView.Csv';
+    $this->set(compact('data', 'data_two', 'data_three', '_serialize'));
 }
 ```
 
@@ -98,18 +77,18 @@ If you want headers or footers in your CSV output, you can specify either a `$_h
 
 ```php
 public function export() {
-	$data = array(
-		array('a', 'b', 'c'),
-		array(1, 2, 3),
-		array('you', 'and', 'me'),
-	);
+    $data = [
+        ['a', 'b', 'c'],
+        [1, 2, 3],
+        ['you', 'and', 'me'],
+    ];
 
-	$_serialize = 'data';
-	$_header = array('Column 1', 'Column 2', 'Column 3');
-	$_footer = array('Totals', '400', '$3000');
+    $_serialize = 'data';
+    $_header = ['Column 1', 'Column 2', 'Column 3'];
+    $_footer = ['Totals', '400', '$3000'];
 
-	$this->viewClass = 'CsvView.Csv';
-	$this->set(compact('data', '_serialize', '_header', '_footer'));
+    $this->viewClass = 'CsvView.Csv';
+    $this->set(compact('data', '_serialize', '_header', '_footer'));
 }
 ```
 
@@ -118,21 +97,21 @@ You can also specify the delimiter, end of line, newline, escape characters and 
 
 ```php
 public function export() {
-	$data = array(
-		array('a', 'b', 'c'),
-		array(1, 2, 3),
-		array('you', 'and', 'me'),
-	);
+    $data = [
+        ['a', 'b', 'c'],
+        [1, 2, 3],
+        ['you', 'and', 'me'],
+    ];
 
-	$_serialize = 'data';
-	$_delimiter = chr(9); //tab
-	$_enclosure = '"';
-	$_newline = '\r\n';
-	$_eol = '~';
-	$_bom = true;
+    $_serialize = 'data';
+    $_delimiter = chr(9); //tab
+    $_enclosure = '"';
+    $_newline = '\r\n';
+    $_eol = '~';
+    $_bom = true;
 
-	$this->viewClass = 'CsvView.Csv';
-	$this->set(compact('data', '_serialize', '_delimiter', '_enclosure', '_newline', '_eol'));
+    $this->viewClass = 'CsvView.Csv';
+    $this->set(compact('data', '_serialize', '_delimiter', '_enclosure', '_newline', '_eol'));
 }
 ```
 
@@ -157,13 +136,13 @@ If you have complex model data, you can use the `$_extract` view variable to spe
 
 ```php
 public function export() {
-	$posts = $this->Post->find('all');
-	$_serialize = 'posts';
-	$_header = array('Post ID', 'Title', 'Created');
-	$_extract = array('Post.id', 'Post.title', 'Post.created');
+    $posts = $this->Post->find('all');
+    $_serialize = 'posts';
+    $_header = ['Post ID', 'Title', 'Created'];
+    $_extract = ['Post.id', 'Post.title', 'Post.created'];
 
-	$this->viewClass = 'CsvView.Csv';
-	$this->set(compact('posts', '_serialize', '_header', '_extract'));
+    $this->viewClass = 'CsvView.Csv';
+    $this->set(compact('posts', '_serialize', '_header', '_extract'));
 }
 ```
 
@@ -178,19 +157,19 @@ You can use `Router::parseExtensions()` and the `RequestHandlerComponent` to aut
 Router::parseExtensions('csv');
 
 // In your controller:
-public $components = array(
-	'RequestHandler' => array(
-		'viewClassMap' => array('csv' => 'CsvView.Csv')
-	)
-);
+public $components = [
+    'RequestHandler' => [
+        'viewClassMap' => ['csv' => 'CsvView.Csv']
+    ]
+];
 
 public function export() {
-	$posts = $this->Post->find('all');
-	$_serialize = 'posts';
-	$_header = array('Post ID', 'Title', 'Created');
-	$_extract = array('Post.id', 'Post.title', 'Post.created');
+    $posts = $this->Post->find('all');
+    $_serialize = 'posts';
+    $_header = ['Post ID', 'Title', 'Created'];
+    $_extract = ['Post.id', 'Post.title', 'Post.created'];
 
-	$this->set(compact('posts', '_serialize', '_header', '_extract'));
+    $this->set(compact('posts', '_serialize', '_header', '_extract'));
 }
 ```
 
@@ -201,10 +180,10 @@ For really complex CSVs, you can also simply use your own view files. This is on
 ```php
 // View used will be in app/View/Posts/csv/export.ctp
 public function export() {
-	$posts = $this->Post->find('all');
-	$_serialize = null;
-	$this->viewClass = 'CsvView.Csv';
-	$this->set(compact('posts', '_serialize');
+    $posts = $this->Post->find('all');
+    $_serialize = null;
+    $this->viewClass = 'CsvView.Csv';
+    $this->set(compact('posts', '_serialize');
 }
 ```
 
@@ -215,16 +194,16 @@ To set a custom file name, use the [`CakeResponse::download`](http://book.cakeph
 
 ```php
 public function export() {
-	$data = array(
-		array('a', 'b', 'c'),
-		array(1, 2, 3),
-		array('you', 'and', 'me'),
-	);
-	$_serialize = 'data';
+    $data = [
+        ['a', 'b', 'c'],
+        [1, 2, 3],
+        ['you', 'and', 'me'],
+    ];
+    $_serialize = 'data';
 
-	$this->response->download('my_file.csv'); // <= setting the file name
-	$this->viewClass = 'CsvView.Csv';
-	$this->set(compact('data', '_serialize'));
+    $this->response->download('my_file.csv'); // <= setting the file name
+    $this->viewClass = 'CsvView.Csv';
+    $this->set(compact('data', '_serialize'));
 }
 ```
 
@@ -237,7 +216,7 @@ To use the component, include it in your Components array:
 
 ```php
 // In your controller:
-public $components = array('CsvView.CsvView');
+public $components = ['CsvView.CsvView'];
 ```
 
 The component has the following methods:
@@ -246,14 +225,14 @@ The component has the following methods:
 Recursively searches `$data` and returns an array of all unique `Hash::extract()`-compatible paths, suitable for the $_extract variable
 
 * *$data:* the results of a Model `find('all')` call.
-* *$excludePaths (optional):* an array of paths to exclude from the returned array, using `Hash::extract()`-compatible syntax. Eg. `array('MyModel.column_name')`
+* *$excludePaths (optional):* an array of paths to exclude from the returned array, using `Hash::extract()`-compatible syntax. Eg. `['MyModel.column_name']`
 
 #### prepareHeaderFromExtract($extract, $customHeaders = array())
 
 Returns an array of user-friendly colum titles, suitable for use as the `$_header`, based on the paths in `$extract`. Eg, the path 'City.Country.name' becomes 'Country Name'.
 
 * *$extract:* an array of paths, using `Hash::extract()`-compatible syntax.
-* *$customHeaders (optional):* an array of 'path' => 'Custom Title' pairs, eg. `array('City.population' => 'No. of People')`. These custom headers, when specified, override the default generated headers.
+* *$customHeaders (optional):* an array of 'path' => 'Custom Title' pairs, eg. `['City.population' => 'No. of People']`. These custom headers, when specified, override the default generated headers.
 
 #### quickExport($data, $excludePaths = array(), $customHeaders = array(), $includeHeader = true)
 
@@ -275,8 +254,8 @@ $this->CsvView->quickExport($results);
 
 ```php
 $results = $this->MyModel->find('all');
-$excludePaths = array('City.id', 'State.id', 'State.Country.id'); // Exclude all id fields
-$customHeaders = array('City.population' => 'No. of People');
+$excludePaths = ['City.id', 'State.id', 'State.Country.id']; // Exclude all id fields
+$customHeaders = ['City.population' => 'No. of People'];
 
 $this->CsvView->quickExport($results, $excludePaths, $customHeaders);
 ```
@@ -286,10 +265,10 @@ $this->CsvView->quickExport($results, $excludePaths, $customHeaders);
 ```php
 $results = $this->MyModel->find('all');
 
-$excludePaths = array('City.id', 'State.id', 'State.Country.id'); // Exclude all id fields
+$excludePaths = ['City.id', 'State.id', 'State.Country.id']; // Exclude all id fields
 $_extract = $this->CsvView->prepareExtractFromFindResults($results, $excludePaths);
 
-$customHeaders = array('City.population' => 'No. of People');
+$customHeaders = ['City.population' => 'No. of People'];
 $_header = $this->CsvView->prepareHeaderFromExtract($_extract, $customHeaders);
 
 $_serialize = 'results';
@@ -299,24 +278,4 @@ $this->set(compact('results' ,'_serialize', '_header', '_extract'));
 
 ## License
 
-The MIT License (MIT)
-
-Copyright (c) 2012 Jose Diaz-Gonzalez
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+See [LICENSE](LICENSE) for details.

@@ -1,6 +1,4 @@
 <?php
-App::uses('View', 'View');
-
 /**
  * A view class that is used for CSV responses.
  *
@@ -50,266 +48,275 @@ App::uses('View', 'View');
  *
  * @link https://github.com/friendsofcake/cakephp-csvview
  */
-class CsvView extends View {
+class CsvView extends View
+{
+    /**
+     * CSV views are always located in the 'csv' sub directory for a
+     * controllers views.
+     *
+     * @var string
+     */
+    public $subDir = 'csv';
 
-/**
- * CSV views are always located in the 'csv' sub directory for a
- * controllers views.
- *
- * @var string
- */
-	public $subDir = 'csv';
+    /**
+     * Whether or not to reset static variables in use
+     *
+     * @var bool
+     */
+    protected $_resetStaticVariables = false;
 
-/**
- * Whether or not to reset static variables in use
- *
- * @var bool
- */
-	protected $_resetStaticVariables = false;
+    /**
+     * Constructor
+     *
+     * @param Controller|null $controller The currently active Controller.
+     */
+    public function __construct(?Controller $controller = null)
+    {
+        parent::__construct($controller);
+        if (isset($controller->response) && $controller->response instanceof CakeResponse) {
+            $controller->response->type('csv');
+        }
+    }
 
-/**
- * Constructor
- *
- * @param Controller|null $controller The currently active Controller.
- */
-	public function __construct(Controller $controller = null) {
-		parent::__construct($controller);
-		if (isset($controller->response) && $controller->response instanceof CakeResponse) {
-			$controller->response->type('csv');
-		}
-	}
+    /**
+     * Render a CSV view.
+     *
+     * Uses the special '_serialize' parameter to convert a set of
+     * view variables into a CSV response. Makes generating simple
+     * CSV responses very easy. If you omit the '_serialize' parameter,
+     * and use a normal view + layout as well.
+     *
+     * Also has support for specifying headers and footers in '_header'
+     * and '_footer' variables, respectively.
+     *
+     * @param string|null $view The view being rendered.
+     * @param string|null $layout The layout being rendered.
+     * @return string The rendered view.
+     * @throws Exception
+     */
+    public function render($view = null, $layout = null)
+    {
+        $this->_setupViewVars();
 
-/**
- * Render a CSV view.
- *
- * Uses the special '_serialize' parameter to convert a set of
- * view variables into a CSV response. Makes generating simple
- * CSV responses very easy. If you omit the '_serialize' parameter,
- * and use a normal view + layout as well.
- *
- * Also has support for specifying headers and footers in '_header'
- * and '_footer' variables, respectively.
- *
- * @param string|null $view The view being rendered.
- * @param string|null $layout The layout being rendered.
- * @return string The rendered view.
- * @throws Exception
- */
-	public function render($view = null, $layout = null) {
-		$this->_setupViewVars();
+        if ($this->viewVars['_serialize'] === null) {
+            if ($view !== false && $viewFileName = $this->_getViewFileName($view)) {
+                $content = $this->_render($viewFileName);
+                if (isset($this->Blocks)) {
+                    $this->Blocks->set('content', $content);
+                }
 
-		if ($this->viewVars['_serialize'] === null) {
-			if ($view !== false && $viewFileName = $this->_getViewFileName($view)) {
-				$content = $this->_render($viewFileName);
-				if (isset($this->Blocks)) {
-					$this->Blocks->set('content', $content);
-				}
-				return $content;
-			}
+                return $content;
+            }
 
-			throw new Exception("Unable to properly generate CSV");
-		}
+            throw new Exception('Unable to properly generate CSV');
+        }
 
-		$this->_renderRow($this->viewVars['_header']);
-		$this->_renderContent();
-		$this->_renderRow($this->viewVars['_footer']);
-		$content = $this->_renderRow(false);
-		if (isset($this->Blocks)) {
-			$this->Blocks->set('content', $content);
-		}
-		$this->_resetStaticVariables = true;
-		$this->_renderRow();
-		return $content;
-	}
+        $this->_renderRow($this->viewVars['_header']);
+        $this->_renderContent();
+        $this->_renderRow($this->viewVars['_footer']);
+        $content = $this->_renderRow(false);
+        if (isset($this->Blocks)) {
+            $this->Blocks->set('content', $content);
+        }
+        $this->_resetStaticVariables = true;
+        $this->_renderRow();
 
-/**
- * Setup defaults for CsvView view variables
- *
- * The following variables can be retrieved from '$this->viewVars'
- * for use in configuring this view:
- *
- * - array '_header': (default null)  A flat array of header column names
- * - array '_footer': (default null)  A flat array of footer column names
- * - array '_extract': (default null) An array of Hash-compatible 'paths' with
- *                                    matching 'sprintf' $format as follows:
- *
- *                                    $_extract = array(
- *                                      array($path, $format),
- *                                      array($path),
- *                                      $path,
- *                                    );
- *
- *                                    If a string or unspecified, the format
- *                                    default is '%s'.
- * - '_delimiter': (default ',')      CSV Delimiter, defaults to comma
- * - '_enclosure': (default '"')      CSV Enclosure for use with fputcsv()
- * - '_newline': (default '\n')       CSV Newline replacement for use with fputcsv()
- * - '_eol': (default '\n')           End-of-line character the csv
- * - '_bom': (default false)          Adds BOM (byte order mark) header
- * - '_setSeparator: (default false)  Adds sep=[_delimiter] in the first line
- *
- * @return void
- **/
-	protected function _setupViewVars() {
-		$required = array(
-			'_extract',
-			'_footer',
-			'_header',
-			'_serialize',
-			'_delimiter',
-			'_enclosure',
-			'_newline',
-			'_eol',
-			'_null',
-			'_bom',
-			'_setSeparator'
-		);
-		foreach ($required as $viewVar) {
-			if (!isset($this->viewVars[$viewVar])) {
-				$this->viewVars[$viewVar] = null;
-			}
-		}
+        return $content;
+    }
 
-		if ($this->viewVars['_delimiter'] === null) {
-			$this->viewVars['_delimiter'] = ',';
-		}
+    /**
+     * Setup defaults for CsvView view variables
+     *
+     * The following variables can be retrieved from '$this->viewVars'
+     * for use in configuring this view:
+     *
+     * - array '_header': (default null)  A flat array of header column names
+     * - array '_footer': (default null)  A flat array of footer column names
+     * - array '_extract': (default null) An array of Hash-compatible 'paths' with
+     *                                    matching 'sprintf' $format as follows:
+     *
+     *                                    $_extract = array(
+     *                                      array($path, $format),
+     *                                      array($path),
+     *                                      $path,
+     *                                    );
+     *
+     *                                    If a string or unspecified, the format
+     *                                    default is '%s'.
+     * - '_delimiter': (default ',')      CSV Delimiter, defaults to comma
+     * - '_enclosure': (default '"')      CSV Enclosure for use with fputcsv()
+     * - '_newline': (default '\n')       CSV Newline replacement for use with fputcsv()
+     * - '_eol': (default '\n')           End-of-line character the csv
+     * - '_bom': (default false)          Adds BOM (byte order mark) header
+     * - '_setSeparator: (default false)  Adds sep=[_delimiter] in the first line
+     *
+     * @return void
+     **/
+    protected function _setupViewVars()
+    {
+        $required = [
+            '_extract',
+            '_footer',
+            '_header',
+            '_serialize',
+            '_delimiter',
+            '_enclosure',
+            '_newline',
+            '_eol',
+            '_null',
+            '_bom',
+            '_setSeparator',
+        ];
+        foreach ($required as $viewVar) {
+            if (!isset($this->viewVars[$viewVar])) {
+                $this->viewVars[$viewVar] = null;
+            }
+        }
 
-		if ($this->viewVars['_enclosure'] === null) {
-			$this->viewVars['_enclosure'] = '"';
-		}
+        if ($this->viewVars['_delimiter'] === null) {
+            $this->viewVars['_delimiter'] = ',';
+        }
 
-		if ($this->viewVars['_newline'] === null) {
-			$this->viewVars['_newline'] = "\n";
-		}
+        if ($this->viewVars['_enclosure'] === null) {
+            $this->viewVars['_enclosure'] = '"';
+        }
 
-		if ($this->viewVars['_eol'] === null) {
-			$this->viewVars['_eol'] = PHP_EOL;
-		}
+        if ($this->viewVars['_newline'] === null) {
+            $this->viewVars['_newline'] = "\n";
+        }
 
-		if ($this->viewVars['_null'] === null) {
-			$this->viewVars['_null'] = 'NULL';
-		}
+        if ($this->viewVars['_eol'] === null) {
+            $this->viewVars['_eol'] = PHP_EOL;
+        }
 
-		if ($this->viewVars['_bom'] === null) {
-			$this->viewVars['_bom'] = false;
-		}
+        if ($this->viewVars['_null'] === null) {
+            $this->viewVars['_null'] = 'NULL';
+        }
 
-		if ($this->viewVars['_setSeparator'] === null) {
-			$this->viewVars['_setSeparator'] = false;
-		}
+        if ($this->viewVars['_bom'] === null) {
+            $this->viewVars['_bom'] = false;
+        }
 
-		if ($this->viewVars['_extract'] !== null) {
-			$this->viewVars['_extract'] = (array)$this->viewVars['_extract'];
-			foreach ($this->viewVars['_extract'] as $i => $extract) {
-				$this->viewVars['_extract'][$i] = (array)$extract;
-				if (count($this->viewVars['_extract'][$i]) !== 2) {
-					$this->viewVars['_extract'][$i][1] = '%s';
-				}
-			}
-		}
+        if ($this->viewVars['_setSeparator'] === null) {
+            $this->viewVars['_setSeparator'] = false;
+        }
 
-		if ($this->viewVars['_serialize'] !== null) {
-			$this->viewVars['_serialize'] = (array)$this->viewVars['_serialize'];
-		}
-	}
+        if ($this->viewVars['_extract'] !== null) {
+            $this->viewVars['_extract'] = (array)$this->viewVars['_extract'];
+            foreach ($this->viewVars['_extract'] as $i => $extract) {
+                $this->viewVars['_extract'][$i] = (array)$extract;
+                if (count($this->viewVars['_extract'][$i]) !== 2) {
+                    $this->viewVars['_extract'][$i][1] = '%s';
+                }
+            }
+        }
 
-/**
- * Renders the body of the data to the csv
- *
- * @return void
- **/
-	protected function _renderContent() {
-		$extract = $this->viewVars['_extract'];
-		$serialize = $this->viewVars['_serialize'];
+        if ($this->viewVars['_serialize'] !== null) {
+            $this->viewVars['_serialize'] = (array)$this->viewVars['_serialize'];
+        }
+    }
 
-		foreach ($serialize as $viewVar) {
-			foreach ($this->viewVars[$viewVar] as $_data) {
-				if ($extract === null) {
-					$this->_renderRow($_data);
-				} else {
-					$values = array();
-					foreach ($extract as $e) {
-						list($path, $format) = $e;
-						$value = Hash::extract($_data, $path);
-						if (isset($value[0])) {
-							$values[] = sprintf($format, $value[0]);
-						} else {
-							$values[] = $this->viewVars['_null'];
-						}
-					}
-					$this->_renderRow($values);
-				}
-			}
-		}
-	}
+    /**
+     * Renders the body of the data to the csv
+     *
+     * @return void
+     **/
+    protected function _renderContent()
+    {
+        $extract = $this->viewVars['_extract'];
+        $serialize = $this->viewVars['_serialize'];
 
-/**
- * Aggregates the rows into a single csv
- *
- * @param array|null $row Row data
- * @return CSV with all data to date
- **/
-	protected function _renderRow($row = null) {
-		static $csv = '';
-		if ($this->_resetStaticVariables) {
-			$csv = '';
-			$this->_resetStaticVariables = false;
-			return;
-		}
+        foreach ($serialize as $viewVar) {
+            foreach ($this->viewVars[$viewVar] as $_data) {
+                if ($extract === null) {
+                    $this->_renderRow($_data);
+                } else {
+                    $values = [];
+                    foreach ($extract as $e) {
+                        [$path, $format] = $e;
+                        $value = Hash::extract($_data, $path);
+                        if (isset($value[0])) {
+                            $values[] = sprintf($format, $value[0]);
+                        } else {
+                            $values[] = $this->viewVars['_null'];
+                        }
+                    }
+                    $this->_renderRow($values);
+                }
+            }
+        }
+    }
 
-		$csv .= (string)$this->_generateRow($row);
-		return $csv;
-	}
+    /**
+     * Aggregates the rows into a single csv
+     *
+     * @param array|null $row Row data
+     * @return CSV with all data to date
+     **/
+    protected function _renderRow($row = null)
+    {
+        static $csv = '';
+        if ($this->_resetStaticVariables) {
+            $csv = '';
+            $this->_resetStaticVariables = false;
 
-/**
- * Generates a single row in a csv from an array of
- * data by writing the array to a temporary file and
- * returning it's contents
- *
- * @param array|null $row Row data
- * @return mixed string with the row in csv-syntax, false on fputcsv failure
- **/
-	protected function _generateRow($row = null) {
-		static $fp = false;
-		if ($fp === false) {
-			$fp = fopen('php://temp', 'r+');
+            return;
+        }
 
-			if ($this->viewVars['_bom']) {
-				fwrite($fp, chr(0xEF) . chr(0xBB) . chr(0xBF));
-			}
-			if ($this->viewVars['_setSeparator']) {
-				fwrite($fp, "sep=" . $this->viewVars['_delimiter'] . "\n");
-			}
-		} else {
-			ftruncate($fp, 0);
-		}
+        $csv .= (string)$this->_generateRow($row);
 
-		if ($row === false || $row === null) {
-			return '';
-		}
+        return $csv;
+    }
 
-		$delimiter = $this->viewVars['_delimiter'];
-		$enclosure = $this->viewVars['_enclosure'];
-		$newline = $this->viewVars['_newline'];
+    /**
+     * Generates a single row in a csv from an array of
+     * data by writing the array to a temporary file and
+     * returning it's contents
+     *
+     * @param array|null $row Row data
+     * @return mixed string with the row in csv-syntax, false on fputcsv failure
+     **/
+    protected function _generateRow($row = null)
+    {
+        static $fp = false;
+        if ($fp === false) {
+            $fp = fopen('php://temp', 'r+');
 
-		$row = str_replace(array("\r\n", "\n", "\r"), $newline, $row);
-		if (fputcsv($fp, $row, $delimiter, $enclosure) === false) {
-			return false;
-		}
+            if ($this->viewVars['_bom']) {
+                fwrite($fp, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            }
+            if ($this->viewVars['_setSeparator']) {
+                fwrite($fp, 'sep=' . $this->viewVars['_delimiter'] . "\n");
+            }
+        } else {
+            ftruncate($fp, 0);
+        }
 
-		rewind($fp);
+        if ($row === false || $row === null) {
+            return '';
+        }
 
-		$csv = '';
-		while (($buffer = fgets($fp, 4096)) !== false) {
-			$csv .= $buffer;
-		}
+        $delimiter = $this->viewVars['_delimiter'];
+        $enclosure = $this->viewVars['_enclosure'];
+        $newline = $this->viewVars['_newline'];
 
-		$eol = $this->viewVars['_eol'];
-		if ($eol !== "\n") {
-			$csv = str_replace("\n", $eol, $csv);
-		}
+        $row = str_replace(["\r\n", "\n", "\r"], $newline, $row);
+        if (fputcsv($fp, $row, $delimiter, $enclosure) === false) {
+            return false;
+        }
 
-		return $csv;
-	}
+        rewind($fp);
 
+        $csv = '';
+        while (($buffer = fgets($fp, 4096)) !== false) {
+            $csv .= $buffer;
+        }
+
+        $eol = $this->viewVars['_eol'];
+        if ($eol !== "\n") {
+            $csv = str_replace("\n", $eol, $csv);
+        }
+
+        return $csv;
+    }
 }
