@@ -73,7 +73,7 @@ class CsvView extends View
     public function __construct(?Controller $controller = null)
     {
         parent::__construct($controller);
-        if (isset($controller->response) && $controller->response instanceof CakeResponse) {
+        if (isset($controller->response)) {
             $controller->response->type('csv');
         }
     }
@@ -89,7 +89,7 @@ class CsvView extends View
      * Also has support for specifying headers and footers in '_header'
      * and '_footer' variables, respectively.
      *
-     * @param string|null $view The view being rendered.
+     * @param string|false|null $view The view being rendered.
      * @param string|null $layout The layout being rendered.
      * @return string The rendered view.
      * @throws Exception
@@ -101,9 +101,7 @@ class CsvView extends View
         if ($this->viewVars['_serialize'] === null) {
             if ($view !== false && $viewFileName = $this->_getViewFileName($view)) {
                 $content = $this->_render($viewFileName);
-                if (isset($this->Blocks)) {
-                    $this->Blocks->set('content', $content);
-                }
+                $this->Blocks->set('content', $content);
 
                 return $content;
             }
@@ -115,9 +113,7 @@ class CsvView extends View
         $this->_renderContent();
         $this->_renderRow($this->viewVars['_footer']);
         $content = $this->_renderRow(false);
-        if (isset($this->Blocks)) {
-            $this->Blocks->set('content', $content);
-        }
+        $this->Blocks->set('content', $content);
         $this->_resetStaticVariables = true;
         $this->_renderRow();
 
@@ -250,8 +246,8 @@ class CsvView extends View
     /**
      * Aggregates the rows into a single csv
      *
-     * @param array|null $row Row data
-     * @return CSV with all data to date
+     * @param array|false|null $row Row data; false or null appends nothing
+     * @return string CSV with all data to date
      **/
     protected function _renderRow($row = null)
     {
@@ -260,7 +256,7 @@ class CsvView extends View
             $csv = '';
             $this->_resetStaticVariables = false;
 
-            return;
+            return $csv;
         }
 
         $csv .= (string)$this->_generateRow($row);
@@ -273,8 +269,8 @@ class CsvView extends View
      * data by writing the array to a temporary file and
      * returning it's contents
      *
-     * @param array|null $row Row data
-     * @return mixed string with the row in csv-syntax, false on fputcsv failure
+     * @param array|false|null $row Row data
+     * @return string|false string with the row in csv-syntax, false on fputcsv failure
      **/
     protected function _generateRow($row = null)
     {
