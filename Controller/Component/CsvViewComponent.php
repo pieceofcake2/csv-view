@@ -128,7 +128,7 @@ class CsvViewComponent extends Component
      * @param array $data the results of a model find('all') call.
      * @param array $excludePaths an array of Hash::extract() compatible paths to be excluded
      * @param array $customHeaders array of 'Hash.Path' => 'Custom Title' pairs, to override default generated titles
-     * @param array $options an array of options:
+     * @param array|bool $options an array of options, or a bool for includeHeader (backwards compatibility):
      *    'includeHeader' => if true, a header will be included in the exported CSV,
      *    'includeClassname' => if true, the class name will be included in the default generated titles,
      *    'humanReadable' => if true, underscores in variable names will be replaced by spaces,
