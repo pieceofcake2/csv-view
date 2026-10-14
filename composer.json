@@ -1,6 +1,6 @@
 {
     "name": "pieceofcake2/csv-view",
-    "description": "A CSV View class for CakePHP 2.x",
+    "description": "CakePHP 2 view class and component for exporting data as CSV",
     "type": "cakephp-plugin",
     "keywords": ["cakephp", "cakephp2", "csv", "view", "export"],
     "license": "MIT",

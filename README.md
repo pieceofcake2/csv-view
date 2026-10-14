@@ -8,275 +8,31 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/pieceofcake2/csv-view/CI.yml?label=CI)](https://github.com/pieceofcake2/csv-view/actions/workflows/CI.yml)
 [![Codecov](https://img.shields.io/codecov/c/gh/pieceofcake2/csv-view?label=Coverage)](https://codecov.io/gh/pieceofcake2/csv-view)
 
-**This is forked for CakePHP2.**
-
-Quickly enable CSV output of your model data.
-
-## Background
-
-I needed to quickly export CSVs of stuff in the database. Using a view class to iterate manually
-would be a chore to replicate for each export method, so I figured it would be much easier to do
-this with a custom view class, like JsonView or XmlView.
+CsvView renders view variables as CSV, like `JsonView` and `XmlView` do for JSON and XML, so
+exporting model data as CSV needs no view template. The `CsvView` component builds the columns
+and headers from `find('all')` results. This is a fork of
+[FriendsOfCake/cakephp-csvview](https://github.com/FriendsOfCake/cakephp-csvview) 2.x for
+[pieceofcake2/cakephp](https://github.com/pieceofcake2/cakephp).
 
 ## Requirements
 
-* CakePHP 2.12+
-* PHP8.0+
+* PHP 8.0+
+* pieceofcake2/cakephp 2.12+
 
 ## Installation
 
-```bash
+```
 composer require pieceofcake2/csv-view
 ```
 
-### Enable plugin
+## Documentation
 
-In 2.0 you need to enable the plugin your `app/Config/bootstrap.php` file:
+See the [documentation](https://pieceofcake2.github.io/csv-view/).
 
-```php
-    CakePlugin::load('CsvView');
-```
+## Contributing
 
-If you are already using `CakePlugin::loadAll();`, then this is not necessary.
-
-## Usage
-
-To export a flat array as a CSV, one could write the following code:
-
-```php
-public function export() {
-    $data = [
-        ['a', 'b', 'c'],
-        [1, 2, 3],
-        ['you', 'and', 'me'],
-    ];
-    $_serialize = 'data';
-
-    $this->viewClass = 'CsvView.Csv';
-    $this->set(compact('data', '_serialize'));
-}
-```
-
-All variables that are to be included in the csv must be specified in the `$_serialize` view variable, exactly how JsonView or XmlView work.
-
-It is possible to have multiple variables in the csv output:
-
-```php
-public function export() {
-    $data = [['a', 'b', 'c']];
-    $data_two = [[1, 2, 3]];
-    $data_three = [['you', 'and', 'me']];
-
-    $_serialize = ['data', 'data_two', 'data_three'];
-
-    $this->viewClass = 'CsvView.Csv';
-    $this->set(compact('data', 'data_two', 'data_three', '_serialize'));
-}
-```
-
-If you want headers or footers in your CSV output, you can specify either a `$_header` or `$_footer` view variable. Both are completely optional:
-
-```php
-public function export() {
-    $data = [
-        ['a', 'b', 'c'],
-        [1, 2, 3],
-        ['you', 'and', 'me'],
-    ];
-
-    $_serialize = 'data';
-    $_header = ['Column 1', 'Column 2', 'Column 3'];
-    $_footer = ['Totals', '400', '$3000'];
-
-    $this->viewClass = 'CsvView.Csv';
-    $this->set(compact('data', '_serialize', '_header', '_footer'));
-}
-```
-
-You can also specify the delimiter, end of line, newline, escape characters and byte order mark (BOM) sequence using
-`$_delimiter`, `$_eol`, `$_newline`, `$_enclosure` and `$_bom` respectively:
-
-```php
-public function export() {
-    $data = [
-        ['a', 'b', 'c'],
-        [1, 2, 3],
-        ['you', 'and', 'me'],
-    ];
-
-    $_serialize = 'data';
-    $_delimiter = chr(9); //tab
-    $_enclosure = '"';
-    $_newline = '\r\n';
-    $_eol = '~';
-    $_bom = true;
-
-    $this->viewClass = 'CsvView.Csv';
-    $this->set(compact('data', '_serialize', '_delimiter', '_enclosure', '_newline', '_eol'));
-}
-```
-
-The defaults for these variables are:
-
-* `_delimiter`: `,`
-* `_enclosure`: `"`
-* `_newline`: `\n`
-* `_eol`: `\n`
-* `_bom`: false
-* `_setSeparator`: false
-
-The `_eol` variable is the one used to generate newlines in the output.
-`_newline`, however, is the character that should replace the newline characters in the actual data.
-It is recommended to use the string representation of the newline character to avoid rendering invalid output.
-
-Some reader software incorrectly renders UTF-8 encoded files which do not contain byte order mark (BOM) byte sequence. The `_bom` variable is the one used to add byte order mark (BOM) byte sequence beginning of the generated CSV output stream. See [`Wikipedia article about byte order mark`](http://en.wikipedia.org/wiki/Byte_order_mark) for more information.
-
-The `_setSeparator` flag can be used to set the separator explicitly in the first line of the CSV. Some readers need this in order to display the CSV correctly.
-
-If you have complex model data, you can use the `$_extract` view variable to specify the individual paths for each record. This is an array of `Hash::extract()`-compatible syntax:
-
-```php
-public function export() {
-    $posts = $this->Post->find('all');
-    $_serialize = 'posts';
-    $_header = ['Post ID', 'Title', 'Created'];
-    $_extract = ['Post.id', 'Post.title', 'Post.created'];
-
-    $this->viewClass = 'CsvView.Csv';
-    $this->set(compact('posts', '_serialize', '_header', '_extract'));
-}
-```
-
-If your model data contains some null values or missing keys, you can use the `$_null` variable, just like you'd use `$_delimiter`, `$_eol`, and `$_enclosure`, to set how null values should be displayed in the CSV.
-
-`$_null` defaults to 'NULL'.
-
-You can use `Router::parseExtensions()` and the `RequestHandlerComponent` to automatically have the CsvView class switched in as follows:
-
-```php
-// In your routes.php file:
-Router::parseExtensions('csv');
-
-// In your controller:
-public $components = [
-    'RequestHandler' => [
-        'viewClassMap' => ['csv' => 'CsvView.Csv']
-    ]
-];
-
-public function export() {
-    $posts = $this->Post->find('all');
-    $_serialize = 'posts';
-    $_header = ['Post ID', 'Title', 'Created'];
-    $_extract = ['Post.id', 'Post.title', 'Post.created'];
-
-    $this->set(compact('posts', '_serialize', '_header', '_extract'));
-}
-```
-
-// Access /posts/export.csv to get the data as csv
-
-For really complex CSVs, you can also simply use your own view files. This is only supported in 2.1+. To do so, either leave `$_serialize` unspecified or set it to null. The view files will be located in the `csv` subdirectory of your current controller:
-
-```php
-// View used will be in app/View/Posts/csv/export.ctp
-public function export() {
-    $posts = $this->Post->find('all');
-    $_serialize = null;
-    $this->viewClass = 'CsvView.Csv';
-    $this->set(compact('posts', '_serialize');
-}
-```
-
-#### Setting the downloaded file name
-By default, the downloaded file will be named after the last segment of the URL used to generate it. Eg: `example.com/my_controller/my_action` would download `my_action.csv`, while `example.com/my_controller/my_action/first_param` would download `first_param.csv`.
-
-To set a custom file name, use the [`CakeResponse::download`](http://book.cakephp.org/2.0/en/controllers/request-response.html#sending-a-string-as-file) method. The following snippet can be used to change the downloaded file from `export.csv` to `my_file.csv`:
-
-```php
-public function export() {
-    $data = [
-        ['a', 'b', 'c'],
-        [1, 2, 3],
-        ['you', 'and', 'me'],
-    ];
-    $_serialize = 'data';
-
-    $this->response->download('my_file.csv'); // <= setting the file name
-    $this->viewClass = 'CsvView.Csv';
-    $this->set(compact('data', '_serialize'));
-}
-```
-
-### CsvView Component Usage
-The CsvView component provides a few methods to help you quickly export the results of complex Model `find('all')` calls.
-
-*Note:* nested `belongsTo` associations are handled no problem. Others (eg. `hasMany`) will be ignored (I can't see why you'd want them in a CSV export, or how you'd include them gracefully).
-
-To use the component, include it in your Components array:
-
-```php
-// In your controller:
-public $components = ['CsvView.CsvView'];
-```
-
-The component has the following methods:
-
-#### prepareExtractFromFindResults($data, $excludePaths = array())
-Recursively searches `$data` and returns an array of all unique `Hash::extract()`-compatible paths, suitable for the $_extract variable
-
-* *$data:* the results of a Model `find('all')` call.
-* *$excludePaths (optional):* an array of paths to exclude from the returned array, using `Hash::extract()`-compatible syntax. Eg. `['MyModel.column_name']`
-
-#### prepareHeaderFromExtract($extract, $customHeaders = array())
-
-Returns an array of user-friendly colum titles, suitable for use as the `$_header`, based on the paths in `$extract`. Eg, the path 'City.Country.name' becomes 'Country Name'.
-
-* *$extract:* an array of paths, using `Hash::extract()`-compatible syntax.
-* *$customHeaders (optional):* an array of 'path' => 'Custom Title' pairs, eg. `['City.population' => 'No. of People']`. These custom headers, when specified, override the default generated headers.
-
-#### quickExport($data, $excludePaths = array(), $customHeaders = array(), $includeHeader = true)
-
-Quickly export an the results of a Model `find('all')` call in one line of code.
-
-* *$data* - the results of a Model `find('all')` call.
-* *$excludePaths (optional):* Same use as in prepareExtractFromFindResults method, above
-* *$customHeaders (optional):* Same use as in prepareHeaderFromExtract method, above
-* *$includeHeader (optional):* if true, a $_header will be included. Defaults to true.
-
-*Example 1 - using quickExport, simplest use:*
-
-```php
-$results = $this->MyModel->find('all');
-$this->CsvView->quickExport($results);
-```
-
-*Example 2 - using quickExport, advanced use:*
-
-```php
-$results = $this->MyModel->find('all');
-$excludePaths = ['City.id', 'State.id', 'State.Country.id']; // Exclude all id fields
-$customHeaders = ['City.population' => 'No. of People'];
-
-$this->CsvView->quickExport($results, $excludePaths, $customHeaders);
-```
-
-*Example 3 - NOT using quickExport:*
-
-```php
-$results = $this->MyModel->find('all');
-
-$excludePaths = ['City.id', 'State.id', 'State.Country.id']; // Exclude all id fields
-$_extract = $this->CsvView->prepareExtractFromFindResults($results, $excludePaths);
-
-$customHeaders = ['City.population' => 'No. of People'];
-$_header = $this->CsvView->prepareHeaderFromExtract($_extract, $customHeaders);
-
-$_serialize = 'results';
-$this->viewClass = 'CsvView.Csv';
-$this->set(compact('results' ,'_serialize', '_header', '_extract'));
-```
+See the [contribution guidelines](https://github.com/pieceofcake2/.github/blob/master/CONTRIBUTING.md).
 
 ## License
 
-See [LICENSE](LICENSE) for details.
+The MIT License. See [LICENSE](LICENSE).
