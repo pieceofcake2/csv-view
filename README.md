@@ -21,7 +21,7 @@ and headers from `find('all')` results. This is a fork of
 
 ## Installation
 
-```
+```bash
 composer require pieceofcake2/csv-view
 ```
 

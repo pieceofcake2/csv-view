@@ -16,7 +16,7 @@ do for JSON and XML. Exporting model data as CSV then needs no view template.
 
 Install the plugin with [Composer](https://getcomposer.org/):
 
-```
+```bash
 composer require pieceofcake2/csv-view
 ```
 
