@@ -14,6 +14,13 @@ and headers from `find('all')` results. This is a fork of
 [FriendsOfCake/cakephp-csvview](https://github.com/FriendsOfCake/cakephp-csvview) 2.x for
 [pieceofcake2/cakephp](https://github.com/pieceofcake2/cakephp).
 
+## Documentation
+
+- Website: https://pieceofcake2.github.io/csv-view/
+- Markdown: [docs/README.md](docs/README.md) (for AI tools and offline reading)
+
+The Markdown documentation is also included in the Composer package, in the plugin's directory: `plugins/CsvView/docs/README.md` (the location depends on your `installer-paths`). Install the package with `--dev` if you only need it for development.
+
 ## Requirements
 
 * PHP 8.0+
@@ -24,10 +31,6 @@ and headers from `find('all')` results. This is a fork of
 ```bash
 composer require pieceofcake2/csv-view
 ```
-
-## Documentation
-
-See the [documentation](https://pieceofcake2.github.io/csv-view/).
 
 ## Contributing
 
