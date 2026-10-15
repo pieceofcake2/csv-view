@@ -36,6 +36,15 @@ composer require pieceofcake2/csv-view
 
 See the [contribution guidelines](https://github.com/pieceofcake2/.github/blob/master/CONTRIBUTING.md).
 
+## Origin
+
+This package is a maintained fork of
+[FriendsOfCake/cakephp-csvview](https://github.com/FriendsOfCake/cakephp-csvview)
+(`friendsofcake/cakephp-csvview` on Packagist, last upstream version 1.3.0), originally by Jose
+Diaz-Gonzalez. It is maintained for CakePHP 2 on modern PHP by
+[pieceofcake2](https://github.com/pieceofcake2). Changes from the original are listed in the
+[commit history since the fork](https://github.com/pieceofcake2/csv-view/compare/7afe84f...2.x).
+
 ## License
 
 The MIT License. See [LICENSE](LICENSE).
